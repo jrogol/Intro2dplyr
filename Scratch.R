@@ -37,3 +37,7 @@ airports
 flights
 airlines
 planes
+
+
+temp <- as.data.frame(starwars$gender)
+str(temp)
