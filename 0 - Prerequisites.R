@@ -12,3 +12,6 @@ tidyverse_update()
 # and Newark) in 2013. It's great for exploring the tidyverse, and worth having
 # even if we don't get to it!
 install.packages("nycflights13")
+
+# The 'zoo' package will be used for demonstrative purposes, as well.
+install.packages("zoo")
