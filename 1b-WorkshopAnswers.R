@@ -1,8 +1,8 @@
-#### Prerequisites ####
+#### 0 - Prerequisites ####
 
-# If you haven't already, run the '0 - Prerequisites.R' script to install/update
+# If you haven't already, run the '0-Prerequisites.R' script to install/update
 # packages we'll use in this workshop.
-source("0 - Prerequisites.R")
+source("0-Prerequisites.R")
 
 #### The Data ####
 
@@ -30,14 +30,9 @@ iris
 
 # What are some of the differences you notice between the TIBBLE and the DATA FRAME?
 
-    # A: Tibble's don't display the entire output (row nor column wise). Tibbles
-    # don't coerce strings to factors automatically, and can feature other data
-    # types (i.e. lists) of values.
-
-# Now that we've seen both the 'starwars' and 'iris' data sets, introduce 
-# yourself to your neighbor. Consider some of dplyr's verbs to which you were 
-# indroduced moments ago. With this in mind, what are some of the questions you
-# might ask of these data sets?
+# Now that we've seen both the 'starwars' and 'iris' data sets, consider some of
+# dplyr's verbs to which you were indroduced moments ago. With this in mind,
+# what are some of the questions you might ask of these data sets?
 
 #### select() ####
 
@@ -85,7 +80,7 @@ select(starwars, my_var)
 
 # The '-' prefix will exclude those columns from selection, either individually:
 select(starwars, -name, -height, -birth_year)
-# Or via concatenation with c().
+# Or via negating a vector (concatenating terms with 'c()')
 select(starwars, -c(name, height, birth_year))
 
 # dpyr also works with DATA FRAMES, as with the 'iris' data:
@@ -93,11 +88,11 @@ select(iris, Species, Petal.Length)
 
 #### select() EXERCISES ####
 
-# The sequence of variable names matters. How would you select the gender and names of all
+# Q: The sequence of variable names matters. How would you select the gender and names of all
 # characters, in this order?
 select(starwars, gender, name)
 
-# How would you select the name, hair_color, skin_color, and eye_color?
+# Q: How would you select the name, hair_color, skin_color, and eye_color?
 select(starwars, name, hair_color, skin_color, eye_color)
 select(starwars, c('name', 'hair_color', 'skin_color', 'eye_color'))
 
@@ -105,7 +100,6 @@ select(starwars, c('name', 'hair_color', 'skin_color', 'eye_color'))
 # dplyr includes some helper functions, such as ends_with(), which can help in
 # selecting variables! These functions take the search pattern as a string.
 select(starwars, name, ends_with('color'))
-select(starwars, matches('.e.'))
 
 # To see more of the helper functions and how they work:
 ?ends_with
@@ -139,41 +133,40 @@ filter(starwars, mass >= 20, mass < 40)
 # Naboo OR with brown eyes:
 filter(starwars, homeworld == "Naboo" | eye_color == "brown")
 
-
-
-#### filter() EXERCISES ####
-
-
-# Use filter() to determine how many characters are of the Droid species.
-filter(starwars, species == "Droid")
-
-# Of the above, how many have red eyes?
-filter(starwars, species == "Droid" & eye_color == "red")
-
-# Find all of the Gungan (species) characters with a height between 190 and 215.
-filter(starwars, species == "Gungan", height > 190, height < 215)
-
 # Sometimes we need to investigate missing data. Filter those characters missing
 # a species. Filter the characters who are NOT missing the species.
 filter(starwars, is.na(species))
 filter(starwars, !is.na(species))
 
 
+
+#### filter() EXERCISES ####
+
+
+# Q: Use filter() to determine how many characters are of the Droid species.
+filter(starwars, species == "Droid")
+
+# Q: Of the above, how many have red eyes?
+filter(starwars, species == "Droid" & eye_color == "red")
+
+# Q: Find all of the Gungan (species) or characters with a height between 190 and 215.
+filter(starwars, species == "Gungan" | (height >= 190 & height <= 215))
+
+
+# Like select(), filter() has helper functions, like between(), which can help
+# in these situations. Between takes three arguments - the first being the
+# variable name, followed by the lower bound (>=) and the upper bound (<=).
+filter(starwars, species == "Gungan" | between(height, 190,215))
+
 # CHALLENGE: Extract just the names of the red-eyed Droids by combining select() and filter()
 select(
   filter(starwars, species == "Droid" & eye_color == "red"),
   name)
 
-# Like select(), filter() has helper functions, like between(), which can help
-# in these situations. Between takes three arguments - the first being the
-# variable name, followed by the lower bound (>=) and the upper bound (<=).
-filter(starwars, species == "Gungan", between(height, 190,215))
-
-
 #### arrange() ####
 
 # Now that we're able to select() and filter() our data, we can reorder the data
-# as we see fit.
+# as we see fit (similar to what you might do in Excel!)
 
 # For example, let's sort 'starwars' by characters' heights from shortest to 
 # tallest. Again, the data is the first argument, followed by the variable(s) of
@@ -187,16 +180,18 @@ arrange(starwars, desc(height))
 # arrange(), like the rest of the dplyr family, does NOT work in place,
 # preserving the originial tibble or data frame.
 
-# arrange() also lets you stack sorts - perhaps we wanted to sort first by age
-# (oldest to youngest), and then by height:
+# arrange() also lets you stack sorts - they'll be sorted in the order by which
+# the arguments are entered.
+
+# Perhaps we wanted to sort first by age (oldest to youngest), and then by
+# height:
 arrange(starwars, desc(birth_year), height)
 
 # Note entries 6 and 7 here - both have a birth year of 92, but are increasing by height!
 
-# Recall that when we sorted by descending height, some of the characters were 
-# missing a value for mass. We can select() the name, height, and mass of the
-# characters, filter() the rows which are missing a mass, and then arrange() the
-# characters by mass.
+# As mentioned earlier, some of the characters are missing values for various 
+# characteristics. Let's say we want to look at the name, height, and mass of
+# characters, but filter out those missing a mass, and then sort by mass.
 
 # One option would be to save each step:
 selected <- select(starwars, name, height, mass)
@@ -213,17 +208,18 @@ rm(arranged, filtered, selected)
 
 #### arrange() EXERCISE ####
 
-# How might we try and nest these queries? Remember: order matters! 
-
+# Q: How might we try and nest these queries? Remember: order matters! 
 arrange(
-  filter(
-    select(starwars, name, height, mass),
-    !is.na(mass))
-  ,mass)
+    filter(
+      select(starwars, name, height, mass),
+      !is.na(mass)
+    ),
+  mass)
+
 
 #### Ceci n'est pas un pipe (or: the Pipe - %>%) ####
 
-# Useful though nested queries can be, it's far from intuitive! The tidyverse 
+# Useful though nested queries can be, they're far from intuitive! The tidyverse 
 # also supplies the PIPE as part of the magrittr package. As with other 
 # programming languages, the PIPE will take the output of one function, and use 
 # it as the input for the next one.
@@ -235,19 +231,14 @@ arrange(
 # cmd (or ctrl, on windows) + shift + M
 
 # We can use the PIPE to recreate the exerise above:
-starwars %>% 
-  select(name, height, mass) %>% 
-  filter(!is.na(mass)) %>% 
-  arrange(mass)
+starwars %>% select(name, height, mass) %>% filter(!is.na(mass)) %>% arrange(mass)
 
 # This is easier to read than nesting functions, and likely more intuitive:
 # Take 'starwars' THEN select name, height, and mass; THEN filter; THEN arrange.
 
 # Also note that you can pipe a dataset into a function (as the first argument),
 # and use the pipe alongside other R code:
-
-starwars %>% names()
-
+iris %>% summary()
 
 
 #### mutate() ####
@@ -265,12 +256,13 @@ starwars %>% names()
 # the equation is the name of the new variable, while the equation is on the
 # right.
 
-mutate(starwars, newtons = mass*9.8)
+mutate(starwars, earth_newtons = mass*9.8)
 
 # Where'd it go? mutate() keeps the data in tact, so the "newtons" variable
 # is added at the very end of the tibble, and we can't see it.
 
-# Instead, let's use the pipe to select a few variables of interest.
+# Instead, let's use the pipe to select a few variables of interest, alongside
+# our newly mutated variable.
 starwars %>% 
   select(name, height, mass) %>% 
   mutate(earth_newtons = mass*9.8)
@@ -278,7 +270,7 @@ starwars %>%
 # Newly created variables don't have to be numeric, either. The tidyverse comes 
 # with the stringr package, which aids in the manipulation of strings/text data. While we 
 # won't cover it in-depth today (sorry!), we can use the word() function to
-# extract just the first name of the characters.
+# extract just the first and last names of the characters.
 library(stringr)
 starwars %>% 
   select(name, height, mass) %>% 
@@ -286,38 +278,18 @@ starwars %>%
 
 #### mutate() and pipe EXERCISES ####
 
-# From what you now know about adding multiple arguments to dplyr functions, how
+# Q: From what you now know about adding multiple arguments to dplyr functions, how
 # might we mutate() two new variables:
-
-# earth_newtons (a= 9.8) and moon_newtons (a=1.6).
+          # earth_newtons (a= 9.8) and moon_newtons (a=1.6, or earth_newtons*.1632).
 # Select only name, mass and species, and arrange() by moon_newtons from high to low.
-
 starwars %>% 
-  select(name, mass, species) %>% 
-  mutate(earth_newtons = mass*9.8, moon_newtons = mass*1.6) %>% 
-  arrange(desc(moon_newtons))
+	  select(name, mass, species) %>% 
+	  mutate(earth_newtons = mass*9.8,
+	         moon_newtons = earth_newtons*.1632) %>% 
+	  arrange(desc(moon_newtons))
 
 
-# From ?starwars, we know that height is in centimeters. Convert this to Feet,
-# where 1 cm = .033 ft.
-starwars %>%
-  select(name, height) %>% 
-  mutate(feet = height * .033)
-
-# CHALLENGE: Try to convert the decimal value of feet into both feet and inches.
-# HINT: Integer division is %/% (i.e. 13 %/% 2 is 6), and the remainder is %% (i.e. 13 %% 2 is 1).
-
-starwars %>% 
-  select(name, height) %>% 
-  mutate(foot = height  *.033) %>% 
-  transmute(name = name, feet = foot %/% 1, inches = round(foot %% 1 *12,1))
-
-starwars %>% 
-  select(name, height) %>% 
-  mutate(foot = height  *.033) %>% 
-  transmute(name = name, feet = floor(foot), inches = floor(foot %% 1 *12))
-
-# What is the difference in age between yourself and the characters? Order by
+# Q: What is the difference in age between yourself and the characters? Order by
 # the difference, youngest to oldest.
 
 # Using a declared variable
@@ -328,18 +300,15 @@ starwars %>%
   mutate(age_delta = birth_year - my_age) %>% 
   arrange(age_delta)
 
-# Mutating a column with age as a variable.
-starwars %>% 
-  select(name, birth_year) %>% 
-  mutate(my_age = 30, age_delta = birth_year - my_age) %>% 
-  arrange(age_delta)
-
-
 
 #### summarize() ####
 
-# dplyr's summarize() (or summarise(), as Hadley's a Kiwi) function will reduce
-# the data to a value. Some summary statistics from base R include:
+# You may be familiar with summary statistics from base R:
+summary(iris)
+
+# dplyr's summarize() (or summarise(), as Hadley's a Kiwi) function works like
+# summary(): it reduces the data to a single value. Some summary statistics from base R
+# include:
 
 # sum() - summation
 # mean() - the arithmatic mean
@@ -350,11 +319,16 @@ starwars %>%
 # dplyr also includes n() to count observations (within summarize, mutate, and
 # filter. It takes no arguments), and n_distinct(), which is faster than length(unique(x)).
 
-# Examine the standard deviation of height, and the total number of characters.
-summarize(starwars, sd(height), n())
+# Examine the standard deviation of height, mean age, median mass, and the total
+# number of characters.
+starwars %>% 
+  summarize(sd(height),
+            mean(birth_year),
+            median(mass),
+            n())
 
-# The names of the summary stats default to the function names, but standard
-# deviation didn't calculate! Other arithmatic summary statistics will also produce NAs. Why?
+# The names of the summary stats default to the function names, but our
+# summaries didn't calculate! Why?
 
 # We could work around this by including the na.rm argument:
 starwars %>% 
@@ -364,7 +338,7 @@ starwars %>%
             count = n())
 
 
-# Or examine only the COMPLETE CASES (note how the count differs):
+# Or by filtering only the COMPLETE CASES (note how the count differs):
 starwars %>% 
   filter(!is.na(birth_year) & !is.na(mass) & !is.na(height)) %>%
   summarise(sd_height = sd(height),
@@ -375,32 +349,25 @@ starwars %>%
 
 #### group_by() ####
 
-# Summarize is made even more powerful after creating groups using the
-# group_by() function. As we saw above, using n() to determine the count of
-# observations wasn't the most insightful. By using 'species' as the argument of
-# group_by(), we can count the observations within each group, and sort by frequency:
+# Summarize is made even more powerful after creating groups using the 
+# group_by() function. By using 'species' as the argument of group_by(), we can 
+# count the number of observations within each group, and sort by frequency:
 
 starwars %>% 
   group_by(species) %>% 
   summarise(species_count = n()) %>% 
   arrange(desc(species_count))
 
-# Humans are the dominant species, so let's see if we can see if there are any
-# similarities when grouping them by homeworld:
+# Using multiple variables as arguments to group_by() will a series of
+# heirarchical subgroups. 
 
-starwars %>% 
-  filter(species == "Human" & !is.na(homeworld)) %>% 
-  group_by(homeworld) %>% 
-  summarize(humans = n()) %>% 
-  arrange(desc(humans))
-
-# Using multiple variables as arguments to group_by() will create summary 
-# statistics for each sub group. Next, we'll create 'homeworld' as a subgroup of
-# 'species' (looking only at Humans and Droids for simplicity):
+# By using 'species' as the first argument, and 'homeworld' as the second, 
+# 'homeworld' becomes a subgroup of species. We can then summarize the number of
+# observations in each subgroup (filtering on Humans or Droids for simplicity):
 
 starwars %>% 
   select(species, homeworld) %>% 
-  filter(species == "Human" | species == "Droid", !is.na(homeworld)) %>% 
+  filter(species == "Human" | species == "Droid") %>% 
   group_by(species, homeworld) %>% 
   summarize(residents = n()) %>% 
   arrange(homeworld, desc(residents))
@@ -408,87 +375,78 @@ starwars %>%
 
 #### group_by() and summarize() EXERCISES ####
 # Let's put it all together now!
-
-# Compute the BMI (kg/(m^2)) for Male characters. What is the mean BMI? the median?
-# Remember: mass is in kg, but height is in centimeters!
-
-starwars %>% 
-  select(gender, height, mass) %>% 
-  filter(gender == "male") %>% 
-  mutate(BMI = mass/(height/100)^2) %>% 
-  summarize(mean_BMI = mean(BMI, na.rm = T),
-            median_BMI = median(BMI, na.rm = T))
  
-# Compare the BMI between species with more than one character in the dataset.
+# Q: Compare the mean and median BMI (kg/(m^2)) between species. Only include
+# species with more than one character in the dataset.
+# Remember: mass is in kg, but height is in centimeters!
 starwars %>% 
   select(species, height, mass) %>% 
-  filter(!is.na(height), !is.na(mass)) %>% 
   mutate(BMI = mass/(height/100)^2) %>% 
   group_by(species) %>% 
   summarize(count = n(),
-            mean_BMI = mean(BMI),
-            median_BMI = median(BMI)) %>% 
+            mean_BMI = mean(BMI, na.rm = T),
+            median_BMI = median(BMI, na.rm = T)) %>% 
   filter(count > 1) %>% 
-  ungroup() %>% 
   arrange(median_BMI)
 
-# What is the 75th quantitle for human height? (HINT: use quantile()). Group by gender.
-quant75 <- starwars %>% 
+# Q: What is the 75th quantitle for human height? (HINT: use quantile()). Group by gender.
+starwars %>% 
   select(name, height, species, gender) %>% 
   filter(species == "Human") %>% 
   group_by(gender) %>% 
   summarize(q75 = quantile(height, .75, na.rm = T))
 
-quant75
+
 
 # CHALLENGE: Find all human characters above the 75th percentile of height, by his/her gender!
-
 starwars %>% 
   select(name, height, species, gender) %>% 
   filter((species == "Human" & gender == 'male' & height >= 188) | 
            (species == "Human" & gender == 'female' & height >=165)) %>% 
   arrange(gender, desc(height))
 
-starwars %>% 
-  select(name, height, species, gender) %>% 
-  filter((species == "Human" & gender == 'male' & height >= quant75$q75[quant75$gender == "male"]) | 
-           (species == "Human" & gender == 'female' & height >= quant75$q75[quant75$gender != "male"])) %>% 
-  arrange(gender, desc(height))
-
 
 #### do() ####
 
-# One last, powerful feature of dplyr is the do() function. It will let you run
-# computations, and store the results in a list. A great example of this is
-# running models on multiple groups at once.
+# One last, powerful feature of dplyr is the do() function. It will let you run 
+# computations using the manipulated data and store the results in a list.
 
-# Here's a basic example, which fits a linear model (lm()) for the height of
-# each species as a function of mass.
+# We can create a simple linear model for the full dataset, where a character's
+# height is a function of his/her mass:
 
+all <- lm(height~mass, data = starwars)
+all
+
+# How well does this model fit the data?
+summary(all)$r.squared
+
+# Employing this same syntax along with group_by() and do(), we can build models
+# for multiple groups at the same time. For example, if we group by species: 
 models <- starwars %>% 
   group_by(species) %>% 
-  filter(!is.na(height), !is.na(mass)) %>% 
+  filter(!is.na(height), !is.na(mass)) %>% # remove observations with missing values
   do(mod = lm(height~mass, data = .))
 
+# the '.' in the last line refers to the function's input; in this case, it's
+# the filtered data from the line of code above do().
 models
 
-# 'mod' stores a list, which features the results of the model. We can examine
+# As you can see, 'mod' is a new variable, where each entry is a list. Each
+# element of the list contains the model for a given species. We can examine 
 # the results for Humans:
 models$mod[models$species == "Human"]
-
-
-# You can also use do() to extract the coefficients of all the models. Note that
-# each observation/row in the 'models' object is referenced by the '.' when
-# calling coef().
-models %>% 
-  do(as.data.frame(coef(.$mod)))
-
 
 # Since lm() produces a list, you can call additional arguments to extract
 # additional information, like the R-squared values of each of the models:
 models %>% 
   summarise(species = species, r_squared = summary(mod)$r.squared) %>% 
   arrange(desc(r_squared))
+
+# You can also use do() to extract the coefficients of all the models. Note that
+# each observation/row in the 'models' object is referenced by the '.' when
+# calling coef().
+models %>% 
+  do(as.data.frame(coef(.$mod)))
 
 # Below are some additional examples of how do() can be useful in wrangling one's data
 # Adapted from Wickham's "Data Manipulation with dplyr" presentation, June 2014"
@@ -501,7 +459,7 @@ library(zoo)
 
 # Create a data frame of dummy data (10 houses, and randomized prices over 10
 # years, 2008-2017). Don't worry if the syntax doesn't make sense yet!
-df <- data.frame(
+houses <- data.frame(
   houseID = rep(1:10, each = 10),
   year = 2008:2017,
   price = ifelse(runif(10 * 10) > 0.50, NA, exp(rnorm(10 * 10)))
@@ -509,12 +467,12 @@ df <- data.frame(
 
 # Using do(), we can replace the missing values by carrying the last valid entry
 # forward for each ID:
-df %>%
+houses %>%
   group_by(houseID) %>%
   do(na.locf(.))
 
 # do() can also be used to show the first two observations within each group in
 # conjunction with head(). Here, the '.' refers to each group within the data frame.
-df %>%
+houses %>%
   group_by(houseID) %>%
   do(head(., 2))

@@ -12,5 +12,5 @@ This workshop covers the "single-table" functions from [dplyr](http://dplyr.tidy
 * `mutate()`
 * `summarize()` or `summarise()`
 * `group_by()`
-As well as the pipe (`%>%`) from [magrittr](http://magrittr.tidyverse.org)
+* As well as the pipe (`%>%`) from [magrittr](http://magrittr.tidyverse.org)
 
