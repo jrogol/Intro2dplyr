@@ -90,8 +90,12 @@ select(iris, Species, Petal.Length)
 
 # Q: The sequence of variable names matters. How would you select the gender and names of all
 # characters, in this order?
+select(starwars, gender, name)
 
 # Q: How would you select the name, hair_color, skin_color, and eye_color?
+select(starwars, name, hair_color, skin_color, eye_color)
+select(starwars, c('name', 'hair_color', 'skin_color', 'eye_color'))
+
 
 # dplyr includes some helper functions, such as ends_with(), which can help in
 # selecting variables! These functions take the search pattern as a string.
@@ -140,10 +144,13 @@ filter(starwars, !is.na(species))
 
 
 # Q: Use filter() to determine how many characters are of the Droid species.
+filter(starwars, species == "Droid")
 
 # Q: Of the above, how many have red eyes?
+filter(starwars, species == "Droid" & eye_color == "red")
 
 # Q: Find all of the Gungan (species) or characters with a height between 190 and 215.
+filter(starwars, species == "Gungan" | (height >= 190 & height <= 215))
 
 
 # Like select(), filter() has helper functions, like between(), which can help
@@ -152,7 +159,9 @@ filter(starwars, !is.na(species))
 filter(starwars, species == "Gungan" | between(height, 190,215))
 
 # CHALLENGE: Extract just the names of the red-eyed Droids by combining select() and filter()
-
+select(
+  filter(starwars, species == "Droid" & eye_color == "red"),
+  name)
 
 #### arrange() ####
 
@@ -200,6 +209,12 @@ rm(arranged, filtered, selected)
 #### arrange() EXERCISE ####
 
 # Q: How might we try and nest these queries? Remember: order matters! 
+arrange(
+    filter(
+      select(starwars, name, height, mass),
+      !is.na(mass)
+    ),
+  mass)
 
 
 #### Ceci n'est pas un pipe (or: the Pipe - %>%) ####
@@ -267,13 +282,24 @@ starwars %>%
 # might we mutate() two new variables:
           # earth_newtons (a= 9.8) and moon_newtons (a=1.6, or earth_newtons*.1632).
 # Select only name, mass and species, and arrange() by moon_newtons from high to low.
+starwars %>% 
+	  select(name, mass, species) %>% 
+	  mutate(earth_newtons = mass*9.8,
+	         moon_newtons = earth_newtons*.1632) %>% 
+	  arrange(desc(moon_newtons))
 
 
 # Q: What is the difference in age between yourself and the characters? Order by
 # the difference, youngest to oldest.
 
 # Using a declared variable
-my_age <- 
+my_age <- 33
+
+starwars %>% 
+  select(name, birth_year) %>% 
+  mutate(age_delta = birth_year - my_age) %>% 
+  arrange(age_delta)
+
 
 #### summarize() ####
 
@@ -353,12 +379,31 @@ starwars %>%
 # Q: Compare the mean and median BMI (kg/(m^2)) between species. Only include
 # species with more than one character in the dataset.
 # Remember: mass is in kg, but height is in centimeters!
-
+starwars %>% 
+  select(species, height, mass) %>% 
+  mutate(BMI = mass/(height/100)^2) %>% 
+  group_by(species) %>% 
+  summarize(count = n(),
+            mean_BMI = mean(BMI, na.rm = T),
+            median_BMI = median(BMI, na.rm = T)) %>% 
+  filter(count > 1) %>% 
+  arrange(median_BMI)
 
 # Q: What is the 75th quantitle for human height? (HINT: use quantile()). Group by gender.
+starwars %>% 
+  select(name, height, species, gender) %>% 
+  filter(species == "Human") %>% 
+  group_by(gender) %>% 
+  summarize(q75 = quantile(height, .75, na.rm = T))
 
 
-# CHALLENGE: Find all human characters above the 75th percentile of height, by his/her gender.
+
+# CHALLENGE: Find all human characters above the 75th percentile of height, by his/her gender!
+starwars %>% 
+  select(name, height, species, gender) %>% 
+  filter((species == "Human" & gender == 'male' & height >= 188) | 
+           (species == "Human" & gender == 'female' & height >=165)) %>% 
+  arrange(gender, desc(height))
 
 
 #### do() ####
@@ -404,7 +449,7 @@ models %>%
   do(as.data.frame(coef(.$mod)))
 
 # Below are some additional examples of how do() can be useful in wrangling one's data
-# Adapted from Wickham's "Data Manipulation with dplyr" presentation, June 2014.
+# Adapted from Wickham's "Data Manipulation with dplyr" presentation, June 2014"
 # Files available: https://www.dropbox.com/sh/i8qnluwmuieicxc/AAAgt9tIKoIm7WZKIyK25lh6a
 
 # zoo, while primarily a package for dealing with time series, contains a
